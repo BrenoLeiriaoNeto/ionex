@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:ionex/src/core/ion.dart';
 
-/// O [IonProvider] é o widget responsável por injetar e propagar um [Ion]
-/// através da árvore de widgets utilizando o contexto nativo do Flutter.
+/// The [IonProvider] is the widget responsible for injecting and propagating an [Ion]
+/// down the widget tree using Flutter's native context.
 ///
-/// Ele permite que qualquer widget filho acesse o estado do [Ion] sem a necessidade
-/// de passá-lo via construtor (prop drilling), utilizando o padrão Service Locator.
+/// It allows any child widget to access the [Ion] state without the need
+/// to pass it via constructors (prop drilling), using the Service Locator pattern.
 class IonProvider extends InheritedWidget {
-  /// O [Ion] que será disponibilizado para a árvore de widgets abaixo deste provider.
+  /// The [Ion] that will be made available to the widget tree below this provider.
   final Ion<dynamic> ion;
 
-  /// Cria um [IonProvider] que injeta o [Ion] e envolve o [child] informado.
+  /// Creates an [IonProvider] that injects the [Ion] and wraps the provided [child].
   const IonProvider({super.key, required this.ion, required super.child});
 
-  /// Busca um [Ion] do tipo [T] especificado na árvore de widgets mais próxima
-  /// acima do [context] fornecido.
+  /// Searches for an [Ion] of the specified type [T] in the widget tree closest
+  /// above the provided [context].
   ///
-  /// Lança uma [Exception] caso o [IonProvider] não seja encontrado no escopo atual.
+  /// Throws an [Exception] if the [IonProvider] is not found in the current scope.
   ///
-  /// Exemplo de uso:
+  /// Usage example:
   /// `final authIon = IonProvider.of<User?>(context);`
   static Ion<T> of<T>(BuildContext context) {
     final IonProvider? provider =
@@ -33,9 +33,9 @@ class IonProvider extends InheritedWidget {
 
   @override
   bool updateShouldNotify(IonProvider oldWidget) {
-    // Como o prório Ion possui o mecanismo interno de notificação de ouvintes
-    // (ValueNotifier), o InheritedWidget não precisa forçar a reconstrução de
-    // toda a árvore caso a instância do Ion continue a mesma.
+    // Since the Ion itself has its internal listener notification mechanism
+    // (ValueNotifier), the InheritedWidget does not need to force a rebuild
+    // of the entire tree if the Ion instance remains the same.
     return ion != oldWidget.ion;
   }
 }

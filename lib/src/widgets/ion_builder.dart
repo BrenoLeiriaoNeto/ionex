@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:ionex/src/core/ion.dart';
 
-/// O [IonBuilder] é o widget reativo encarregado de escutar as mudanças de um [Ion].
+/// The [IonBuilder] is the reactive widget responsible for listening to changes in an [Ion].
 ///
-/// Toda vez que o estado do [Ion] fornecido for modificado através de `.set()` ou
-/// `.update()`, apenas o escopo delimitado pelo método [builder] será re-renderizado,
-/// garantindo uma performance cirúrgica na interface de usuário.
+/// Every time the provided [ion] state is modified via `.set()` or `.update()`,
+/// only the scope delimited by the [builder] method will re-render,
+/// ensuring surgical performance in the user interface.
 class IonBuilder<T> extends StatelessWidget {
-  /// O [Ion] que este widget ficará observando reativamente.
+  /// The [Ion] that this widget will reactively observe.
   final Ion<T> ion;
 
-  /// A função que reconstrói a árvore de widgets baseando-se no novo valor do [Ion].
+  /// The function that rebuilds the widget tree based on the new [Ion] value.
   ///
-  /// Fornece o [BuildContext] atual e o valor [value] em tempo real do estado.
+  /// Provides the current [BuildContext] and the real-time state [value].
   final Widget Function(BuildContext context, T value) builder;
 
-  /// Cria um [IonBuilder] associado a um [Ion] e a uma função de renderização [builder].
+  /// Creates an [IonBuilder] associated with an [ion] and a [builder] rendering function.
   const IonBuilder({
     super.key,
     required this.ion,

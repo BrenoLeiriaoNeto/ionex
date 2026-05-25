@@ -1,37 +1,37 @@
 import 'package:flutter/foundation.dart';
 
-/// O [Ion] é a unidade fundamental de estado reativo na biblioteca Ionex.
+/// The [Ion] is the fundamental unit of reactive state in the Ionex library.
 ///
-/// Ele encapsula um pedaço de estado molecular e gerencia seus ouvintes de
-/// forma extremamente leve, estendendo as capacidade nativas do [ValueNotifier].
+/// It encapsulates a piece of molecular state and manages its listeners
+/// efficiently by extending the native capabilities of [ValueNotifier].
 class Ion<T> extends ValueNotifier<T> {
-  /// Inicializa o [Ion] com um valor padrão obrigatório.
+  /// Initializes the [Ion] with a mandatory default initial value.
   Ion(super.value);
 
-  /// Retorna o estado atual do Íon.
+  /// Returns the current state of the Ion.
   ///
-  /// Funciona exatamente como ler o valor bruto em memória.
+  /// Acts exactly like reading the raw value in memory.
   T get state => value;
 
-  /// Atualiza o estado do Íon com um valor totalmente novo.
+  /// Updates the state of the Ion with a brand new value.
   ///
-  /// É o equivalente ao `setAtom` do Jotai ou ao `setState` molecular.
-  /// Notifica automaticamente todos os widgets ouvintes se o valor mudar.
+  /// Equivalent to Jotai's `setAtom` or a molecular `setState`.
+  /// Automatically notifies all listening widgets if the value changes.
   void set(T newValue) {
     value = newValue;
   }
 
-  /// Modifica o estado atual baseando-se no valor anterior.
+  /// Modifies the current state based on the previous state value.
   ///
-  /// Muito útil para incrementos, manipulação de listas ou mutação de objetos.
-  /// Exemplo: `contadorIon.update((c) => c + 1);`
+  /// Highly useful for increments, list manipulation, or object mutation.
+  /// Example: `counterIon.update((c) => c + 1);`
   void update(T Function(T currentState) updateFn) {
     value = updateFn(value);
   }
 
-  /// Reinicia o Íon para um valor específico.
+  /// Resets the Ion to a specific initial value.
   ///
-  /// Sintaxe helper para legibilidade em fluxos de logout ou limpeza de filtros.
+  /// Helper syntax for better readability in logout flows or filter clearing.
   void reset(T initialValue) {
     value = initialValue;
   }
