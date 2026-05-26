@@ -1,12 +1,12 @@
 # ionex
 
-[![Pub Version](https://img.shields.io/badge/pub-v1.0.0-blueviolet?style=for-the-badge)](https://pub.dev)
+[![Pub Version](https://img.shields.io/badge/pub-v1.0.2-blueviolet?style=for-the-badge)](https://pub.dev)
 [![Dart SDK](https://img.shields.io/badge/dart-3.0+-blue?style=for-the-badge)](https://dart.dev)
 [![Flutter](https://img.shields.io/badge/flutter-3.0+-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Coverage](https://img.shields.io/badge/Coverage-100%25-success?style=for-the-badge)](https://github.com)
 
-Ionex is a lightweight Flutter state-management package for small, explicit, and predictable UI state. It revolves around a single reactive primitive, Ion<T>, and two small widgets that make it easy to observe and inject state without introducing a heavy framework.
+Ionex is a lightweight Flutter state-management package for small, explicit, and predictable UI state. It revolves around a single reactive primitive, `Ion<T>`, and two small widgets that make it easy to observe and inject state without introducing a heavy framework.
 
 ## Highlights
 
@@ -18,14 +18,14 @@ Ionex is a lightweight Flutter state-management package for small, explicit, and
 
 ## Current project status
 
-This repository is currently in version 1.0.0.
+This repository is currently in version 1.0.2
 
 Verified project health:
 
 - Flutter tests: passing
 - Flutter analyzer: no issues found
 - License: MIT
-- Changelog: updated for 1.0.0
+- Changelog: updated for 1.0.2
 
 ## Installation
 
@@ -33,7 +33,7 @@ Add ionex to your pubspec.yaml:
 
 ```yaml
 dependencies:
-  ionex: ^1.0.0
+  ionex: ^1.0.2
 ```
 
 Then install dependencies:
@@ -50,7 +50,7 @@ flutter pub get
 ## Package layout
 
 - lib/ionex.dart: public exports
-- lib/src/core/ion.dart: the Ion<T> reactive state primitive
+- lib/src/core/ion.dart: the `Ion<T>` reactive state primitive
 - lib/src/widgets/ion_builder.dart: rebuilds only the part of the UI that depends on an Ion
 - lib/src/widgets/ion_provider.dart: injects an Ion into the widget tree
 - example/lib/main.dart: runnable demonstration app
@@ -58,9 +58,9 @@ flutter pub get
 
 ## Core API
 
-### Ion<T>
+### `Ion<T>`
 
-Ion<T> is the basic building block of the package. It stores a typed value and notifies listeners whenever the value changes.
+`Ion<T>` is the basic building block of the package. It stores a typed value and notifies listeners whenever the value changes.
 
 ```dart
 final counter = Ion<int>(0);
@@ -80,9 +80,9 @@ counter.reset(0);
 
 ## UI helpers
 
-### IonBuilder<T>
+### `IonBuilder<T>`
 
-IonBuilder<T> listens to an Ion and rebuilds the provided builder callback when the value changes.
+`IonBuilder<T>` listens to an Ion and rebuilds the provided builder callback when the value changes.
 
 ```dart
 IonBuilder<int>(
@@ -93,9 +93,9 @@ IonBuilder<int>(
 );
 ```
 
-### IonProvider
+### `IonProvider`
 
-IonProvider injects an Ion into the widget tree so descendants can read it without passing it through constructors.
+`IonProvider` injects an Ion into the widget tree so descendants can read it without passing it through constructors.
 
 ```dart
 IonProvider(
@@ -104,7 +104,7 @@ IonProvider(
 );
 ```
 
-Retrieve it from the context with IonProvider.of<T>(context):
+Retrieve it from the context with `IonProvider.of<T>(context)`:
 
 ```dart
 final authStatus = IonProvider.of<String>(context);
@@ -192,8 +192,8 @@ count.update((current) => current + 5);
 
 The example application in example/lib/main.dart demonstrates two common flows:
 
-- Global state with a shared Ion for the counter and theme
-- Context-based access with IonProvider and IonProvider.of<T>(context)
+- Global state with a shared `Ion` for the counter and theme
+- Context-based access with `IonProvider` and `IonProvider.of<T>(context)`
 
 To run the example:
 

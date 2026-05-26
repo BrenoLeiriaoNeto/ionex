@@ -1,11 +1,11 @@
 name: ionex
-description: "A new Flutter package project."
-version: 1.0.0
-homepage:
+description: "A lightweight, high-performance, molecular state management library for Flutter."
+version: 1.0.2
+repository: https://github.com/BrenoLeiriaoNeto/ionex.git
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=2.5.0"
+  flutter: ">=3.0.0"
 
 dependencies:
   flutter:
