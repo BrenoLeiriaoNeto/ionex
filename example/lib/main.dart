@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
           themeMode: currentTheme,
           theme: ThemeData.light(useMaterial3: true),
           darkTheme: ThemeData.dark(useMaterial3: true),
-          home: IonProvider(
+          home: IonProvider<Ion<String>>(
             ion: Ion<String>('Hello from IonProvider Context!'),
             child: const HomeScreen(),
           ),
@@ -36,7 +36,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final contextMessageIon = IonProvider.of<String>(context);
+    final contextMessageIon = IonProvider.of<Ion<String>>(context);
 
     return Scaffold(
       appBar: AppBar(
