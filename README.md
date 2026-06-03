@@ -1,42 +1,52 @@
 # ionex
 
-[![Pub Version](https://img.shields.io/badge/pub-v1.0.2-blueviolet?style=for-the-badge)](https://pub.dev)
+[![Pub Version](https://img.shields.io/badge/pub-v1.1.0-blueviolet?style=for-the-badge)](https://pub.dev/packages/ionex)
 [![Dart SDK](https://img.shields.io/badge/dart-3.0+-blue?style=for-the-badge)](https://dart.dev)
 [![Flutter](https://img.shields.io/badge/flutter-3.0+-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-[![Coverage](https://img.shields.io/badge/Coverage-100%25-success?style=for-the-badge)](https://github.com)
+[![Coverage](https://img.shields.io/badge/Coverage-100%25-success?style=for-the-badge)](https://github.com/BrenoLeiriaoNeto/ionex)
 
-Ionex is a lightweight Flutter state-management package for small, explicit, and predictable UI state. It revolves around a single reactive primitive, `Ion<T>`, and two small widgets that make it easy to observe and inject state without introducing a heavy framework.
+Ionex is a tiny Flutter state-management package for small, explicit, and predictable UI state. It centers on a single typed reactive primitive, `Ion<T>`, and two lightweight widgets for observing and providing state without introducing a heavy framework.
+
+## Why Ionex?
+
+- Minimal API designed for concise state mutation
+- Built on Flutter's native `ValueNotifier` for predictable updates
+- No bulky framework concepts or hidden lifecycle complexity
+- Great for feature-level state, simple reactive UIs, and reusable controller objects
 
 ## Highlights
 
-- A typed reactive core built on top of Flutter's native ValueNotifier
-- Simple mutation helpers: set, update, and reset
-- Minimal widget helpers for reactive rendering and dependency injection
-- A working example app that demonstrates both global and context-based usage
-- A tested and analyzed codebase with current release metadata in place
+- `Ion<T>` as a lightweight reactive state container
+- `IonBuilder<T>` for scoped rebuilds
+- `IonProvider<Ion<T>>` for type-safe tree injection
+- Example app included in `example/lib/main.dart`
+- Unit tests covering core behavior
 
 ## Current project status
 
-This repository is currently in version 1.0.2
-
-Verified project health:
-
+- Version: `1.1.0`
 - Flutter tests: passing
 - Flutter analyzer: no issues found
 - License: MIT
-- Changelog: updated for 1.0.2
+- Changelog: available in `CHANGELOG.md`
 
 ## Installation
 
-Add ionex to your pubspec.yaml:
+Add ionex to your project:
+
+```bash
+flutter pub add ionex
+```
+
+Or add it directly to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ionex: ^1.0.2
+  ionex: ^1.1.0
 ```
 
-Then install dependencies:
+Then fetch dependencies:
 
 ```bash
 flutter pub get
@@ -49,18 +59,18 @@ flutter pub get
 
 ## Package layout
 
-- lib/ionex.dart: public exports
-- lib/src/core/ion.dart: the `Ion<T>` reactive state primitive
-- lib/src/widgets/ion_builder.dart: rebuilds only the part of the UI that depends on an Ion
-- lib/src/widgets/ion_provider.dart: injects an Ion into the widget tree
-- example/lib/main.dart: runnable demonstration app
-- test/core/ion_test.dart: unit tests for the core state engine
+- `lib/ionex.dart`: public exports
+- `lib/src/core/ion.dart`: `Ion<T>` reactive state primitive
+- `lib/src/widgets/ion_builder.dart`: rebuilds only the widget subtree that depends on an Ion
+- `lib/src/widgets/ion_provider.dart`: injects an Ion into the widget tree
+- `example/lib/main.dart`: runnable demonstration app
+- `test/core/ion_test.dart`: core unit tests
 
 ## Core API
 
 ### `Ion<T>`
 
-`Ion<T>` is the basic building block of the package. It stores a typed value and notifies listeners whenever the value changes.
+`Ion<T>` is the fundamental reactive unit in Ionex. It stores a typed value and notifies listeners whenever the value changes.
 
 ```dart
 final counter = Ion<int>(0);
@@ -73,16 +83,16 @@ counter.reset(0);
 
 ### Available methods
 
-- set(newValue): replaces the current state immediately
-- update((current) => nextValue): derives the next value from the current one
-- reset(initialValue): restores the ion to a known value
-- state: returns the current value synchronously
+- `set(newValue)`: replace the current state immediately
+- `update((current) => nextValue)`: derive a new state from the current one
+- `reset(initialValue)`: restore the ion to a known value
+- `state`: access the current value synchronously
 
 ## UI helpers
 
 ### `IonBuilder<T>`
 
-`IonBuilder<T>` listens to an Ion and rebuilds the provided builder callback when the value changes.
+`IonBuilder<T>` listens to an `Ion` and rebuilds only the widget subtree that depends on it.
 
 ```dart
 IonBuilder<int>(
@@ -95,19 +105,21 @@ IonBuilder<int>(
 
 ### `IonProvider`
 
-`IonProvider` injects an Ion into the widget tree so descendants can read it without passing it through constructors.
+`IonProvider` installs an `Ion` into the widget tree so descendants can retrieve it without prop drilling.
 
 ```dart
-IonProvider(
+final authStatus = Ion<String>('unauthenticated');
+
+IonProvider<Ion<String>>(
   ion: authStatus,
   child: const ProfileScreen(),
 );
 ```
 
-Retrieve it from the context with `IonProvider.of<T>(context)`:
+Retrieve the injected `Ion` from the current `BuildContext`:
 
 ```dart
-final authStatus = IonProvider.of<String>(context);
+final authStatus = IonProvider.of<Ion<String>>(context);
 print(authStatus.state);
 ```
 
@@ -150,29 +162,37 @@ class CounterView extends StatelessWidget {
 import 'package:flutter/material.dart';
 import 'package:ionex/ionex.dart';
 
+final themeIon = Ion<ThemeMode>(ThemeMode.light);
+final messageIon = Ion<String>('Hello from IonProvider Context!');
+
 class AppRoot extends StatelessWidget {
   const AppRoot({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Ion<ThemeMode>(ThemeMode.light);
+    return IonBuilder<ThemeMode>(
+      ion: themeIon,
+      builder: (context, themeMode) {
+        return IonProvider<Ion<String>>(
+          ion: messageIon,
+          child: MaterialApp(
+            themeMode: themeMode,
+            theme: ThemeData.light(useMaterial3: true),
+            darkTheme: ThemeData.dark(useMaterial3: true),
+            home: Builder(
+              builder: (context) {
+                final message = IonProvider.of<Ion<String>>(context);
 
-    return IonProvider(
-      ion: Ion<String>('Hello from IonProvider Context!'),
-      child: MaterialApp(
-        themeMode: theme.state,
-        home: Builder(
-          builder: (context) {
-            final message = IonProvider.of<String>(context);
-
-            return Scaffold(
-              body: Center(
-                child: Text(message.state),
-              ),
-            );
-          },
-        ),
-      ),
+                return Scaffold(
+                  body: Center(
+                    child: Text(message.state),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -190,12 +210,12 @@ count.update((current) => current + 5);
 
 ## Example app
 
-The example application in example/lib/main.dart demonstrates two common flows:
+The example app in `example/lib/main.dart` demonstrates two common flows:
 
-- Global state with a shared `Ion` for the counter and theme
-- Context-based access with `IonProvider` and `IonProvider.of<T>(context)`
+- shared global state for counter and theme
+- context-scoped state access with `IonProvider` and `IonProvider.of<T>(context)`
 
-To run the example:
+Run the example:
 
 ```bash
 cd example
@@ -204,32 +224,30 @@ flutter run
 
 ## Testing and verification
 
-Current verification commands and results:
+- `flutter test` → passed
+- `flutter analyze` → no issues found
 
-- flutter test → passed
-- flutter analyze → no issues found
+The core tests cover:
 
-The core behavior covered by tests includes:
-
-- initialization and default values
-- set() updates
-- update() derivation from the current state
-- reset() restoration to a known value
+- initialization and default state
+- `set()` updates
+- `update()` derivation
+- `reset()` restoration
 - listener notifications on state changes
 
 ## Changelog
 
-See CHANGELOG.md for the published release notes.
+See `CHANGELOG.md` for full release notes.
 
 ## License
 
-Ionex is distributed under the MIT License. See LICENSE for the full text.
+Ionex is distributed under the MIT License. See `LICENSE` for the full text.
 
 ## Contributing
 
 Contributions are welcome. A good contribution generally includes:
 
-1. Updating or adding tests for any behavior change
-2. Updating documentation when the public API changes
-3. Keeping examples aligned with the current package API
-4. Verifying the package with flutter test and flutter analyze
+1. updating or adding tests for any behavior change
+2. updating documentation when the public API changes
+3. keeping examples aligned with the current package API
+4. verifying changes with `flutter test` and `flutter analyze`
