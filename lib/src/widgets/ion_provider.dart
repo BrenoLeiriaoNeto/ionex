@@ -6,9 +6,9 @@ import 'package:ionex/src/core/ion.dart';
 ///
 /// It allows any child widget to access the [Ion] state without the need
 /// to pass it via constructors (prop drilling), using the Service Locator pattern.
-class IonProvider extends InheritedWidget {
+class IonProvider<T extends Ion<dynamic>> extends InheritedWidget {
   /// The [Ion] that will be made available to the widget tree below this provider.
-  final Ion<dynamic> ion;
+  final T ion;
 
   /// Creates an [IonProvider] that injects the [Ion] and wraps the provided [child].
   const IonProvider({super.key, required this.ion, required super.child});
@@ -19,16 +19,16 @@ class IonProvider extends InheritedWidget {
   /// Throws an [Exception] if the [IonProvider] is not found in the current scope.
   ///
   /// Usage example:
-  /// `final authIon = IonProvider.of<User?>(context);`
-  static Ion<T> of<T>(BuildContext context) {
-    final IonProvider? provider =
-        context.dependOnInheritedWidgetOfExactType<IonProvider>();
+  /// `final authController = IonProvider.of<AuthController>(context);`
+  static T of<T extends Ion<dynamic>>(BuildContext context) {
+    final IonProvider<T>? provider =
+        context.dependOnInheritedWidgetOfExactType<IonProvider<T>>();
 
     if (provider == null) {
-      throw Exception("Nenhum IonProvider encontrado no contexto atual. "
-          "Certifique-se de envolver sua árvore de widgets com um IonProvider.");
+      throw Exception("No IonProvider of type $T found in the current context. "
+          "Certify to wrap your widget tree with an IonProvider<$T>");
     }
-    return provider.ion as Ion<T>;
+    return provider.ion;
   }
 
   @override
