@@ -177,7 +177,7 @@ MultiIonProvider(
 
 ## Breaking changes in 2.0.0
 
-- **Smar`Ion.reset()`**: No longer accepts an input argument. It implicitly rolls the state back to the original `initialValue` given during construction.
+- **Smart`Ion.reset()`**: No longer accepts an input argument. It implicitly rolls the state back to the original `initialValue` given during construction.
 - **Simplified `IonProvider` Signature**: Constraints changed from `T extends Ion<dynamic>` to simply `T extends Ion`, improving syntactic clarity and IDE autocomplete engines.
 - **Flexible `IonProvider(child)`**: The `child` property is now optional inside the `IonProvider` constructor to support `MultiIonProvider` flattening. Standalone implementations are guarded by a runtime assertion requiring a non-null `child`.
 
