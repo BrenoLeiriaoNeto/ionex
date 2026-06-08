@@ -5,3 +5,5 @@ library;
 export 'src/core/ion.dart';
 export 'src/widgets/ion_builder.dart';
 export 'src/widgets/ion_provider.dart';
+export 'src/widgets/ion_consumer.dart';
+export 'src/widgets/multi_ion_provider.dart';

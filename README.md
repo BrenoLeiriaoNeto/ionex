@@ -1,35 +1,38 @@
 # ionex
 
-[![Pub Version](https://img.shields.io/badge/pub-v1.1.0-blueviolet?style=for-the-badge)](https://pub.dev/packages/ionex)
+[![Pub Version](https://img.shields.io/badge/pub-v2.0.0-blueviolet?style=for-the-badge)](https://pub.dev/packages/ionex)
 [![Dart SDK](https://img.shields.io/badge/dart-3.0+-blue?style=for-the-badge)](https://dart.dev)
 [![Flutter](https://img.shields.io/badge/flutter-3.0+-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Coverage](https://img.shields.io/badge/Coverage-100%25-success?style=for-the-badge)](https://github.com/BrenoLeiriaoNeto/ionex)
 
-Ionex is a tiny Flutter state-management package for small, explicit, and predictable UI state. It centers on a single typed reactive primitive, `Ion<T>`, and two lightweight widgets for observing and providing state without introducing a heavy framework.
+Ionex is a lightweight Flutter state-management package built around a single atomic reactive primitive: `Ion<T>`. It keeps UI state small, explicit, predictable, and easy to compose without introducing a heavy framework.
 
 ## Why Ionex?
 
-- Minimal API designed for concise state mutation
-- Built on Flutter's native `ValueNotifier` for predictable updates
-- No bulky framework concepts or hidden lifecycle complexity
-- Great for feature-level state, simple reactive UIs, and reusable controller objects
+- **Minimal API**: Zero friction, Fast, readable state creation and mutation.
+- **Predictable Flow**: Built on Flutter's native `ValueNotifier` for predictable state flow.
+- **No Magic Lifecycles**: No complex background streams or hidden garbage collection issues.
+- **Hybrid Architecture**: Works flawlessly as global atoms (Signals/Jotai style) or as scoped local business logic components via context-driven injection (Bloc/Provider style).
+- **Zero Dependencies**: Keeps your app bundle lightweight and future-proof.
 
 ## Highlights
 
-- `Ion<T>` as a lightweight reactive state container
-- `IonBuilder<T>` for scoped rebuilds
-- `IonProvider<Ion<T>>` for type-safe tree injection
-- Example app included in `example/lib/main.dart`
-- Unit tests covering core behavior
+- `Ion<T>` for strongly-typed reactive state.
+- `IonBuilder<T>` for targeted, lightweight widget subtree rebuilds.
+- `IonProvider<T extends Ion>` for type-safe, scoped tree dependency injection.
+- `IonConsumer<T extends Ion<S>, S>` for automatic context lookup and state listening.
+- `MultiIonProvider` to flatten provider structures and kill nesting boilerplate.
+- 100% Widget and Unit test coverage verified.
+- Example application included in `example/lib/main.dart`
 
 ## Current project status
 
-- Version: `1.1.0`
+- Version: `2.0.0`
 - Flutter tests: passing
 - Flutter analyzer: no issues found
 - License: MIT
-- Changelog: available in `CHANGELOG.md`
+- Changelog: `CHANGELOG.md`
 
 ## Installation
 
@@ -43,7 +46,7 @@ Or add it directly to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  ionex: ^1.1.0
+  ionex: ^2.0.0
 ```
 
 Then fetch dependencies:
@@ -61,38 +64,44 @@ flutter pub get
 
 - `lib/ionex.dart`: public exports
 - `lib/src/core/ion.dart`: `Ion<T>` reactive state primitive
-- `lib/src/widgets/ion_builder.dart`: rebuilds only the widget subtree that depends on an Ion
-- `lib/src/widgets/ion_provider.dart`: injects an Ion into the widget tree
+- `lib/src/widgets/ion_builder.dart`: scoped UI rebuild widget
+- `lib/src/widgets/ion_provider.dart`: scoped controller injection
+- `lib/src/widgets/ion_consumer.dart`: context-driven listener widget
+- `lib/src/widgets/multi_ion_provider.dart`: multi-provider composition
 - `example/lib/main.dart`: runnable demonstration app
-- `test/core/ion_test.dart`: core unit tests
+- `test/`: unit and widget test coverage
 
 ## Core API
 
 ### `Ion<T>`
 
-`Ion<T>` is the fundamental reactive unit in Ionex. It stores a typed value and notifies listeners whenever the value changes.
+An `Ion<T>` is the fundamental reactive molecule of your application. It holds a typed state value and alerts listeners exclusively when its value changes.
 
 ```dart
+// Instantiate with an initial value
 final counter = Ion<int>(0);
 
-counter.state; // 0
-counter.set(1);
-counter.update((current) => current + 1);
-counter.reset(0);
+print(counter.state); // Read synchronously: 0
+
+counter.set(1); // Direct mutation
+counter.update((current) => current + 1); // Derived mutation
+counter.reset(); // Automatically snaps back to 0!
 ```
 
-### Available methods
+### Key methods
 
-- `set(newValue)`: replace the current state immediately
-- `update((current) => nextValue)`: derive a new state from the current one
-- `reset(initialValue)`: restore the ion to a known value
-- `state`: access the current value synchronously
+- `set(T newValue)`: Immediately replaces the state and triggers updates if the new value differs.
+- `update(T Function(T currentState) updateFn)`: Mutates state using a callback function. Out-of-the-box support forces UI rebuilds even for in-place collection mutations (like `List.add`).
+- `reset()`: Automatically rolls the state back to the exact initial value defined in the constructor.
+- `state`: Getter that synchronously exposes the current value.
 
-## UI helpers
+> Note: `Ion.reset()` no longer accepts an arbitrary value. It always returns the controller to its original initial value.
+
+## UI Components & Dependency Injection
 
 ### `IonBuilder<T>`
 
-`IonBuilder<T>` listens to an `Ion` and rebuilds only the widget subtree that depends on it.
+Listens to an external or global Ion atom and rebuilds only the builder's local widget tree layout.
 
 ```dart
 IonBuilder<int>(
@@ -103,117 +112,196 @@ IonBuilder<int>(
 );
 ```
 
-### `IonProvider`
+### `IonProvider<T extends Ion>`
 
-`IonProvider` installs an `Ion` into the widget tree so descendants can retrieve it without prop drilling.
+Injects a state controller into a local widget subtree using Flutter's native `InheritedWidget` mechanisms. It encapsulates business logic lifecycle, calling `dispose()` automatically when removed from the tree.
 
 ```dart
-final authStatus = Ion<String>('unauthenticated');
+class AuthController extends Ion<String> {
+  AuthController() : super('unauthenticated');
 
-IonProvider<Ion<String>>(
-  ion: authStatus,
+  void login(String user) => set('Welcome, $user');
+}
+
+// Ingesting into the tree
+IonProvider<AuthController>(
+  create: (_) => AuthController(),
   child: const ProfileScreen(),
 );
 ```
 
-Retrieve the injected `Ion` from the current `BuildContext`:
+You can read the controller anywhere below using `IonProvider.of<T>(context)`.
+
+`IonProvider.of<T>` also accepts a `listen` flag, so you can choose whether the caller rebuilds when the state changes:
 
 ```dart
-final authStatus = IonProvider.of<Ion<String>>(context);
-print(authStatus.state);
+// Fetch instance without listening (optimal for button action triggers)
+final controller = IonProvider.of<AuthController>(context, listen: false);
+controller.login('AtomicDev');
 ```
+
+### `IonConsumer<T extends Ion<S>, S>`
+
+Combines dependency lookup and state listening into a single sleek component. It automatically resolves the requested controller from the context, listens to its state variations, and exposes both values directly in the builder function.
+
+```dart
+IonConsumer<AuthController, String>(
+  builder: (context, state, controller) {
+    return Column(
+      children: [
+        Text('Status: $state'),
+        ElevatedButton(
+          onPressed: () => controller.login('User123'),
+          child: const Text('Log In'),
+        ),
+      ],
+    );
+  },
+);
+```
+
+### `MultiIonProvider`
+
+Annihilates the nested "Pyramid of Doom" widget tree when injecting multiple controllers at the same level.
+
+```dart
+MultiIonProvider(
+  providers: [
+    IonProvider<ThemeController>(create: (_) => ThemeController()),
+    IonProvider<LabMessageController>(create: (_) => LabMessageController('Init')),
+    IonProvider<LabStatusController>(create: (_) => LabStatusController(true)),
+  ],
+  child: const HomeScreen(),
+);
+```
+
+## Breaking changes in 2.0.0
+
+- **Smar`Ion.reset()`**: No longer accepts an input argument. It implicitly rolls the state back to the original `initialValue` given during construction.
+- **Simplified `IonProvider` Signature**: Constraints changed from `T extends Ion<dynamic>` to simply `T extends Ion`, improving syntactic clarity and IDE autocomplete engines.
+- **Flexible `IonProvider(child)`**: The `child` property is now optional inside the `IonProvider` constructor to support `MultiIonProvider` flattening. Standalone implementations are guarded by a runtime assertion requiring a non-null `child`.
 
 ## Usage examples
 
-### 1. Simple counter
+### A complete, working integration showcasing the power of global atoms alongside clean, scoped multi-controllers injection:
 
 ```dart
 import 'package:flutter/material.dart';
 import 'package:ionex/ionex.dart';
 
-final counter = Ion<int>(0);
-
-class CounterView extends StatelessWidget {
-  const CounterView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: IonBuilder<int>(
-          ion: counter,
-          builder: (context, value) {
-            return Text('Count: $value');
-          },
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => counter.update((current) => current + 1),
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-}
-```
-
-### 2. Context-based state access
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:ionex/ionex.dart';
-
+// Global Atoms (Application wide states)
+final counterIon = Ion<int>(0);
 final themeIon = Ion<ThemeMode>(ThemeMode.light);
-final messageIon = Ion<String>('Hello from IonProvider Context!');
 
-class AppRoot extends StatelessWidget {
-  const AppRoot({super.key});
+// Scoped Context Controllers (Screen specific business logic)
+class LabMessageController extends Ion<String> {
+  LabMessageController(super.value);
+  void changeMessage(String msg) => set(msg);
+}
+
+class LabStatusController extends Ion<bool> {
+  LabStatusController(super.value);
+  void toggleStatus() => set(!state);
+}
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return IonBuilder<ThemeMode>(
       ion: themeIon,
-      builder: (context, themeMode) {
-        return IonProvider<Ion<String>>(
-          ion: messageIon,
-          child: MaterialApp(
-            themeMode: themeMode,
-            theme: ThemeData.light(useMaterial3: true),
-            darkTheme: ThemeData.dark(useMaterial3: true),
-            home: Builder(
-              builder: (context) {
-                final message = IonProvider.of<Ion<String>>(context);
-
-                return Scaffold(
-                  body: Center(
-                    child: Text(message.state),
-                  ),
-                );
-              },
-            ),
+      builder: (context, currentTheme) {
+        return MaterialApp(
+          themeMode: currentTheme,
+          theme: ThemeData.light(useMaterial3: true),
+          darkTheme: ThemeData.dark(useMaterial3: true),
+          home: MultiIonProvider(
+            providers: [
+              IonProvider<LabMessageController>(create: (_) => LabMessageController('Atomic Lab Active')),
+              IonProvider<LabStatusController>(create: (_) => LabStatusController(true)),
+            ],
+            child: const HomeScreen(),
           ),
         );
       },
     );
   }
 }
-```
 
-### 3. Resetting and deriving state
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
-```dart
-final filter = Ion<String>('all');
-final count = Ion<int>(0);
-
-filter.reset('all');
-count.update((current) => current + 5);
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Ionex Molecular Lab'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.brightness_6),
+            onPressed: () => themeIon.update(
+              (c) => c == ThemeMode.light ? ThemeMode.dark : ThemeMode.light,
+            ),
+          )
+        ],
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Consuming context via IonConsumer
+            IonConsumer<LabMessageController, String>(
+              builder: (context, message, controller) {
+                return Column(
+                  children: [
+                    Text(message),
+                    ElevatedButton(
+                      onPressed: () => controller.changeMessage('State mutated!'),
+                      child: const Text('Mutate Message'),
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+            // Consuming sister controller from MultiIonProvider
+            IonConsumer<LabStatusController, bool>(
+              builder: (context, isActive, controller) {
+                return ActionChip(
+                  label: Text(isActive ? 'SYSTEM: ONLINE' : 'SYSTEM: OFFLINE'),
+                  onPressed: () => controller.toggleStatus(),
+                );
+              },
+            ),
+            const Divider(height: 48),
+            // Consuming global atoms via IonBuilder
+            IonBuilder<int>(
+              ion: counterIon,
+              builder: (context, count) => Text('Count: $count', style: const TextStyle(fontSize: 32)),
+            ),
+            ElevatedButton(
+              onPressed: () => counterIon.update((c) => c + 1),
+              child: const Text('Increment Global Atom'),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
 ```
 
 ## Example app
 
-The example app in `example/lib/main.dart` demonstrates two common flows:
+The example app in `example/lib/main.dart` demonstrates:
 
-- shared global state for counter and theme
-- context-scoped state access with `IonProvider` and `IonProvider.of<T>(context)`
+- theme switching with a global `Ion<ThemeMode>`
+- context-scoped controllers with `IonProvider`
+- reactive UI updates with `IonConsumer` and `IonBuilder`
+- flattened provider composition using `MultiIonProvider`
 
 Run the example:
 
@@ -227,13 +315,16 @@ flutter run
 - `flutter test` → passed
 - `flutter analyze` → no issues found
 
-The core tests cover:
+The test suite validates:
 
-- initialization and default state
-- `set()` updates
-- `update()` derivation
-- `reset()` restoration
-- listener notifications on state changes
+- `Ion` initialization and state access
+- `set()` and `update()` workflows
+- `reset()` restoring original values
+- listener notification behavior
+- `IonBuilder` reactive rebuilds
+- `IonProvider` disposal and context lookup
+- `IonConsumer` implicit controller resolution
+- `MultiIonProvider` provider composition
 
 ## Changelog
 
