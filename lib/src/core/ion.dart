@@ -5,8 +5,10 @@ import 'package:flutter/foundation.dart';
 /// It encapsulates a piece of molecular state and manages its listeners
 /// efficiently by extending the native capabilities of [ValueNotifier].
 class Ion<T> extends ValueNotifier<T> {
+  final T _initialValue;
+
   /// Initializes the [Ion] with a mandatory default initial value.
-  Ion(super.value);
+  Ion(super.value) : _initialValue = value;
 
   /// Returns the current state of the Ion.
   ///
@@ -21,18 +23,25 @@ class Ion<T> extends ValueNotifier<T> {
     value = newValue;
   }
 
-  /// Modifies the current state based on the previous state value.
+  /// Mutates the current state using an [updateFn] callback.
   ///
-  /// Highly useful for increments, list manipulation, or object mutation.
-  /// Example: `counterIon.update((c) => c + 1);`
+  /// If the state is mutated in-place (e.g., modifying a [List] or [Map]
+  /// without changing its reference), it automatically forces a notification
+  /// to ensure the UI rebuilds properly.
   void update(T Function(T currentState) updateFn) {
-    value = updateFn(value);
+    final oldState = value;
+    final newState = updateFn(value);
+
+    if (oldState == newState) {
+      value = newState;
+      notifyListeners();
+    } else {
+      value = newState;
+    }
   }
 
-  /// Resets the Ion to a specific initial value.
-  ///
-  /// Helper syntax for better readability in logout flows or filter clearing.
-  void reset(T initialValue) {
-    value = initialValue;
+  /// Resets the state back to its original initial value.
+  void reset() {
+    value = _initialValue;
   }
 }
