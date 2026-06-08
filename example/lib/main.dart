@@ -4,6 +4,17 @@ import 'package:ionex/ionex.dart';
 final counterIon = Ion<int>(0);
 final themeIon = Ion<ThemeMode>(ThemeMode.light);
 
+class LabMessageController extends Ion<String> {
+  LabMessageController(super.value);
+
+  void changeMessage(String newMessage) => set(newMessage);
+}
+
+class LabStatusController extends Ion<bool> {
+  LabStatusController(super.value);
+  void toggleStatus() => set(!state);
+}
+
 void main() {
   runApp(const MyApp());
 }
@@ -21,8 +32,15 @@ class MyApp extends StatelessWidget {
           themeMode: currentTheme,
           theme: ThemeData.light(useMaterial3: true),
           darkTheme: ThemeData.dark(useMaterial3: true),
-          home: IonProvider<Ion<String>>(
-            ion: Ion<String>('Hello from IonProvider Context!'),
+          home: MultiIonProvider(
+            providers: [
+              IonProvider<LabMessageController>(
+                create: (_) => LabMessageController('Atomic Lab Active'),
+              ),
+              IonProvider<LabStatusController>(
+                create: (_) => LabStatusController(true),
+              ),
+            ],
             child: const HomeScreen(),
           ),
         );
@@ -36,8 +54,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final contextMessageIon = IonProvider.of<Ion<String>>(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ionex Molecular Lab'),
@@ -58,12 +74,52 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              contextMessageIon.state,
-              style: Theme.of(context).textTheme.bodyLarge,
+            IonConsumer<LabMessageController, String>(
+              builder: (context, message, controller) {
+                return Column(
+                  children: [
+                    Text(
+                      message,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        controller.changeMessage(
+                          '🔬 Atomic state mutated at ${DateTime.now().second}s!',
+                        );
+                      },
+                      child: const Text('Mutate Context Message'),
+                    ),
+                  ],
+                );
+              },
             ),
+
             const SizedBox(height: 24),
+
+            IonConsumer<LabStatusController, bool>(
+              builder: (context, isActive, controller) {
+                return ActionChip(
+                  label: Text(
+                    isActive ? 'Core System: Online' : 'Core System: Offline',
+                  ),
+                  avatar: Icon(
+                    Icons.circle,
+                    color: isActive ? Colors.green : Colors.red,
+                    size: 16,
+                  ),
+                  onPressed: () => controller.toggleStatus(),
+                );
+              },
+            ),
+
+            const Divider(height: 64, indent: 32, endIndent: 32),
+
             const Text('You have reacted to this Ion this many times:'),
+            const SizedBox(height: 12),
 
             IonBuilder<int>(
               ion: counterIon,
@@ -98,7 +154,7 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => counterIon.reset(0),
+        onPressed: () => counterIon.reset(),
         icon: const Icon(Icons.refresh),
         label: const Text('Reset Lab'),
       ),

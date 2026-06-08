@@ -37,7 +37,7 @@ void main() {
       themeIon.set('light');
       expect(themeIon.state, equals('light'));
 
-      themeIon.reset('dark');
+      themeIon.reset();
       expect(themeIon.state, equals('dark'));
     });
 
@@ -56,6 +56,26 @@ void main() {
 
       expect(notificationCount, equals(2));
       expect(counterIon.state, equals(2));
+    });
+
+    test(
+        'Should force notification on update() even when mutating collection in-place',
+        () {
+      final listIon = Ion<List<String>>(['Thing', 'Anything']);
+      int notificationCount = 0;
+
+      listIon.addListener(() {
+        notificationCount++;
+      });
+
+      listIon.update((list) {
+        list.add('Something');
+        return list;
+      });
+
+      expect(notificationCount, equals(1));
+      expect(listIon.state, contains('Something'));
+      expect(listIon.state.length, equals(3));
     });
   });
 }
