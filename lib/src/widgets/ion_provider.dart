@@ -1,5 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:ionex/src/core/ion.dart';
+import 'package:ionex/ionex.dart';
+import 'package:ionex/src/core/errors.dart';
+
+@visibleForTesting
+class IonInheritedElement<T extends Ion> extends InheritedWidget {
+  final T ion;
+
+  const IonInheritedElement({
+    super.key,
+    required this.ion,
+    required super.child,
+  });
+
+  @override
+  bool updateShouldNotify(IonInheritedElement<T> oldWidget) {
+    return ion != oldWidget.ion;
+  }
+}
 
 /// An [IonProvider] is responsible for injecting and propagating an [Ion]
 /// down the widget tree using Flutter's native context mechanisms.
@@ -22,7 +39,7 @@ class IonProvider<T extends Ion> extends StatefulWidget {
 
   /// Creates a copy of this [IonProvider] with a new [child] widget.
   ///
-  /// Used internally by [MultiIonProvider] to faltten and linearize the widget tree.
+  /// Used internally by [MultiIonProvider] to flatten and linearize the widget tree.
   IonProvider<T> copyWithChild(Widget newChild) {
     return IonProvider<T>(
       key: key,
@@ -37,7 +54,7 @@ class IonProvider<T extends Ion> extends StatefulWidget {
   /// to call actions/methods without triggering unnecessary widget rebuilds. Set [listen]
   /// to `true` if the calling widget needs to rebuild whenever the dependent [Ion] changes.
   ///
-  /// Throws an [Exception] if no matching [IonProvider] is found in the current scope.
+  /// Throws an [IonProviderNotFoundException] if no matching [IonProvider] is found in the current scope.
   ///
   /// Example:
   /// ```dart
@@ -45,12 +62,11 @@ class IonProvider<T extends Ion> extends StatefulWidget {
   /// ```
   static T of<T extends Ion>(BuildContext context, {bool listen = false}) {
     final inheritedWidget = listen
-        ? context.dependOnInheritedWidgetOfExactType<_IonInheritedElement<T>>()
-        : context.getInheritedWidgetOfExactType<_IonInheritedElement<T>>();
+        ? context.dependOnInheritedWidgetOfExactType<IonInheritedElement<T>>()
+        : context.getInheritedWidgetOfExactType<IonInheritedElement<T>>();
 
     if (inheritedWidget == null) {
-      throw Exception("No IonProvider of type $T found in the current context. "
-          "Certify to wrap your widget tree with an IonProvider<$T>");
+      throw IonProviderNotFoundException(T, context.widget.runtimeType);
     }
     return inheritedWidget.ion;
   }
@@ -79,24 +95,11 @@ class _IonProviderState<T extends Ion> extends State<IonProvider<T>> {
     assert(widget.child != null,
         'IonProvider requires a child widget when used standalone.');
 
-    return _IonInheritedElement<T>(
+    return IonInheritedElement<T>(
       ion: _ion,
       child: widget.child!,
     );
   }
 }
 
-class _IonInheritedElement<T extends Ion> extends InheritedWidget {
-  final T ion;
-
-  const _IonInheritedElement({
-    super.key,
-    required this.ion,
-    required super.child,
-  });
-
-  @override
-  bool updateShouldNotify(_IonInheritedElement<T> oldWidget) {
-    return ion != oldWidget.ion;
-  }
-}
+// Removed the old private class
