@@ -2,11 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2026-06-23
+
+### New Resources
+
+- **`IonListener<T>`:** A passive widget designed for handling discrete UI side-effects (navigation, snackbars, dialogs) without triggering widget rebuilds.
+- **`IonLocator`:** A lightweight, synchronous, and out-of-context Service Locator inspired by ASP.NET DI.
+  - Supports `addSingleton`, `addLazySingleton` and `addTransient` registration strategies for any `Object`.
+  - Built-in duplicate registration guards to prevent accidental overrides.
+- **`IonexError`:** A robust semantic error system to replace generic exceptions and ensure absolute runtime safety:
+  - `IonLocatorDependencyNotFoundException`: Thrown with precise type info when a dependency is missing in `IonLocator`.
+  - `IonLocatorDuplicateRegistrationException`: Prevents overriding already registered dependencies by accident.
+  - `IonProviderNotFoundException`: Automatically detects and reports the exact widget type attempting to access an out-of-scope `IonProvider` via `BuildContext`.
+
 ## [2.0.0] - 2026-06-08
 
 ### Breaking Changes
 
-- **Redesigned `Ion.reset`:** The `.reset()` method no longer accepts an arbritary value as a parameter. it is now smart and automatically resets the state back to the exact initial value passed to the `Ion(initialValue)` constructor.
+- **Redesigned `Ion.reset`:** The `.reset()` method no longer accepts an arbitrary value as a parameter. it is now smart and automatically resets the state back to the exact initial value passed to the `Ion(initialValue)` constructor.
 - **Optional `IonProvider(child)`:** To enable the existence of `MultiIonProvider`, the child parameter of `IonProvider` is no longer required in the constructor. Note: _A runtime assert ensures that if used standalone, the `child` must still be provided_.
 
 ### New Resources
@@ -25,10 +38,10 @@ All notable changes to this project will be documented in this file.
 
 ## [1.1.0] - 2026-06-03
 
-### Improvementes
+### Improvements
 
 - **Strict Type Propagation in IonProvider:** Enhanced `IonProvider` to be a generic class (`IonProvider<T extends Ion>`), ensuring that the Flutter framework differentiates between different controller instances within the widget tree.
-- **Type-Safe Service Location:** Updated `IonProvider.of<T>` to fetch the exact exact `Ion` type requested via context, preventing type casting issues when nesting multiple providers.
+- **Type-Safe Service Location:** Updated `IonProvider.of<T>` to fetch the exact `Ion` type requested via context, preventing type casting issues when nesting multiple providers.
 - **Improved Error Messaging:** Enhanced runtime exception messages to explicitly show which specific `Ion` type (`$T`) was missing in the current context.
 
 ### Fixes
