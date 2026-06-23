@@ -9,7 +9,7 @@ import 'ion_provider.dart';
 /// The [builder] function provides the [context], the current[state],
 /// and the [controller] instance for quick method triggers.
 class IonConsumer<T extends Ion<S>, S> extends StatelessWidget {
-  /// Function build the widget tree dyunamically based on the latest state.
+  /// Function build the widget tree dynamically based on the latest state.
   final Widget Function(BuildContext context, S state, T controller) builder;
 
   const IonConsumer({super.key, required this.builder});
