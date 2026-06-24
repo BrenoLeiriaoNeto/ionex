@@ -29,6 +29,7 @@ jobs:
         run: flutter test --coverage
 
       - name: Check Code Coverage Threshold (95%)
-        run: |
-          dart pub global activate very_good_coverage
-          $HOME/.pub-cache/bin/very_good_coverage check coverage/lcov.info 95
+        uses: VeryGoodOpenSource/very-good-coverage@v3
+        with:
+          path: 'coverage/lcov.info'
+          min_coverage: 95
