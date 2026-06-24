@@ -19,19 +19,17 @@ class IonListener<T> extends StatefulWidget {
   final Widget child;
 
   /// Creates an [IonListener] to handle discrete atomic state side effects.
-  const IonListener({
-    super.key,
-    required this.ion,
-    required this.listener,
-    required this.child
-  });
+  const IonListener(
+      {super.key,
+      required this.ion,
+      required this.listener,
+      required this.child});
 
   @override
   State<IonListener<T>> createState() => _IonListenerState<T>();
 }
 
 class _IonListenerState<T> extends State<IonListener<T>> {
-
   @override
   void initState() {
     super.initState();

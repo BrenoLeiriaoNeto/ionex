@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ionex/ionex.dart';
-import 'package:ionex/src/widgets/ion_provider.dart';
 import 'package:ionex/src/core/errors.dart';
 
 import '../mock/mock_lifecycle_ion.dart';
@@ -64,7 +63,7 @@ void main() {
       ));
 
       expect(buildCount, 1);
-      
+
       // We trigger a manual rebuild of the parent to see if child rebuilds
       // (it shouldn't unless the InheritedWidget says so)
       await tester.pump();
@@ -74,22 +73,22 @@ void main() {
     test('IonInheritedElement.updateShouldNotify coverage', () {
       final ion1 = Ion<int>(1);
       final ion2 = Ion<int>(2);
-      
+
       final element1 = IonInheritedElement(
         ion: ion1,
         child: const SizedBox(),
       );
-      
+
       final element2 = IonInheritedElement(
         ion: ion2,
         child: const SizedBox(),
       );
-      
+
       final element1Same = IonInheritedElement(
         ion: ion1,
         child: const SizedBox(),
       );
-      
+
       expect(element1.updateShouldNotify(element2), isTrue);
       expect(element1.updateShouldNotify(element1Same), isFalse);
     });
@@ -123,7 +122,8 @@ void main() {
       await tester.tap(find.text('Tap Me'));
       final dynamic exception = tester.takeException();
       expect(exception, isA<IonProviderNotFoundException>());
-      expect(exception.toString(), contains('Could not find the IonProvider<Ion<int>>'));
+      expect(exception.toString(),
+          contains('Could not find the IonProvider<Ion<int>>'));
     });
   });
 }
